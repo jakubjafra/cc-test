@@ -1,6 +1,11 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
 Description: Template for cc-test
+
+Parameters:
+  ApiStage:
+    Type: String
+    Default: Test
   
 Globals:
   Function:
@@ -10,7 +15,7 @@ Resources:
   UsersApi:
     Type: AWS::Serverless::HttpApi
     Properties:
-      StageName: Dev
+      StageName: !Ref ApiStage
   UsersFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -23,19 +28,31 @@ Resources:
         Variables:
           USERS_TABLE_NAME: !Ref UsersTable
       Policies:
-        - DynamoDBWritePolicy:
+        - DynamoDBCrudPolicy:
             TableName: !Ref UsersTable
       Events:
         UsersGet:
           Type: HttpApi
           Properties:
-            RestApiId: !Ref UsersApi
+            ApiId: !Ref UsersApi
             Path: /users
             Method: get
+        UsersPost:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref UsersApi
+            Path: /users
+            Method: post
+        UsersPatch:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref UsersApi
+            Path: /users/{id}
+            Method: patch
         UsersDelete:
           Type: HttpApi
           Properties:
-            RestApiId: !Ref UsersApi
+            ApiId: !Ref UsersApi
             Path: /users/{id}
             Method: delete
     Metadata:
@@ -52,19 +69,15 @@ Resources:
       AttributeDefinitions:
       - AttributeName: id
         AttributeType: S
-      - AttributeName: name
-        AttributeType: S
-      - AttributeName: email
-        AttributeType: S
       KeySchema:
       - AttributeName: id
         KeyType: HASH
       BillingMode: PAY_PER_REQUEST
 
 Outputs:
-  UsersApi:
-    Description: "API Gateway endpoint URL for Prod stage for Users function"
-    Value: !GetAtt UsersApi.Arn
+  UsersApiEndpoint:
+    Description: "API Gateway endpoint URL for UploadFileFunction"
+    Value: !Sub "https://${UsersApi}.execute-api.${AWS::Region}.amazonaws.com/${ApiStage}/users/"
   UsersFunction:
     Description: "Users Lambda Function ARN"
     Value: !GetAtt UsersFunction.Arn
