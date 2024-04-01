@@ -17,8 +17,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - run: |
-          # trigger the tests here
+        run: cd users
+      
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run tests
+        run: npm test
 
   build-and-package:
     if: github.ref == 'refs/heads/main'
