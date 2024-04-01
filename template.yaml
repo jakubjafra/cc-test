@@ -28,6 +28,7 @@ Resources:
         Variables:
           USERS_TABLE_NAME: !Ref UsersTable
       Policies:
+        # TODO: Probably it would be better to split this function into create, list, edit/delete single user and have separate security policies for each
         - DynamoDBCrudPolicy:
             TableName: !Ref UsersTable
       Events:

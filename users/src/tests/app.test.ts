@@ -59,5 +59,47 @@ describe('app', () => {
         }),
       );
     });
+
+    describe('returns 400', () => {
+      it('if invalid json is provided', async () => {
+        const request = apiGatewayProxyEvent('post', '/users', {});
+        request.body = '{"invalid":';
+        const response = await lambdaHandler(request);
+
+        expect(response).toStrictEqual(
+          jsonResponse(400, {
+            message: 'Body parsing error.',
+          }),
+        );
+      });
+
+      it('if invalid user shape is provided', async () => {
+        const request = apiGatewayProxyEvent('post', '/users', {
+          user: 'Test',
+          email: 'test@test.com',
+        });
+        const response = await lambdaHandler(request);
+
+        expect(response).toStrictEqual(
+          jsonResponse(400, {
+            message: 'Input validation error.',
+          }),
+        );
+      });
+
+      it('if invalid email is provided', async () => {
+        const request = apiGatewayProxyEvent('post', '/users', {
+          name: 'Test',
+          email: 'test',
+        });
+        const response = await lambdaHandler(request);
+
+        expect(response).toStrictEqual(
+          jsonResponse(400, {
+            message: 'Input validation error.',
+          }),
+        );
+      });
+    });
   });
 });
