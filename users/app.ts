@@ -18,14 +18,14 @@ interface User {
   email: string;
 }
 
-const client = new DynamoDBClient({});
-
-function assertExists<T>(value?: T | null): T {
-  assert(value);
+function assertExists<T>(value?: T | null, message?: string): T {
+  assert(value, message);
   return value;
 }
 
-const UsersTableName = assertExists(process.env.USERS_TABLE_NAME);
+const usersTableName = assertExists(process.env.USERS_TABLE_NAME, 'DynamoDB Users table name is required.');
+
+const client = new DynamoDBClient({});
 
 class UserReportedError extends Error {
   statusCode: number;
@@ -68,7 +68,7 @@ async function createUser(userInput: UserInput): Promise<User> {
 
   await client.send(
     new PutItemCommand({
-      TableName: UsersTableName,
+      TableName: usersTableName,
       Item: {
         id: { S: user.id },
         name: { S: user.name },
@@ -96,7 +96,7 @@ async function scanAll(tableName: string): Promise<Record<string, AttributeValue
 
 async function listUsers(): Promise<User[]> {
   // TODO: Better would be to implement actual pagination, but for this demo this will do.
-  const records = await scanAll(UsersTableName);
+  const records = await scanAll(usersTableName);
 
   return records.map((record) => ({
     id: record.id.S as string,
@@ -108,7 +108,7 @@ async function listUsers(): Promise<User[]> {
 async function patchUser(userId: string, userInput: UserInput): Promise<void> {
   await client.send(
     new UpdateItemCommand({
-      TableName: UsersTableName,
+      TableName: usersTableName,
       Key: {
         id: { S: userId },
       },
@@ -123,7 +123,7 @@ async function patchUser(userId: string, userInput: UserInput): Promise<void> {
 async function deleteUser(userId: string): Promise<void> {
   await client.send(
     new DeleteItemCommand({
-      TableName: UsersTableName,
+      TableName: usersTableName,
       Key: {
         id: { S: userId },
       },

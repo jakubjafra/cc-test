@@ -1,10 +1,9 @@
 {
-  "name": "hello_world",
+  "name": "cc-test",
   "version": "1.0.0",
-  "description": "hello world sample for NodeJS",
+  "description": "cc-test",
   "main": "app.js",
-  "repository": "https://github.com/awslabs/aws-sam-cli/tree/develop/samcli/local/init/templates/cookiecutter-aws-sam-hello-nodejs",
-  "author": "SAM CLI",
+  "author": "Jakub Jafra",
   "license": "MIT",
   "scripts": {
     "unit": "jest",
@@ -26,6 +25,8 @@
     "@types/uuid": "^9.0.8",
     "@typescript-eslint/eslint-plugin": "^5.62.0",
     "@typescript-eslint/parser": "^5.62.0",
+    "aws-sdk-client-mock": "^4.0.0",
+    "aws-sdk-client-mock-jest": "^4.0.0",
     "eslint": "^8.57.0",
     "eslint-config-prettier": "^8.10.0",
     "eslint-plugin-prettier": "^4.0.0",
