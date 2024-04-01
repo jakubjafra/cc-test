@@ -9,15 +9,7 @@ env:
   AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
   AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
   SAM_TEMPLATE: template.yaml
-  PROD_STACK_NAME: sam-app
-  PROD_PIPELINE_EXECUTION_ROLE: arn:aws:iam::975050381104:role/aws-sam-cli-managed-dev-pipel-PipelineExecutionRole-FvMEAbRK4WZU
-  PROD_CLOUDFORMATION_EXECUTION_ROLE: arn:aws:iam::975050381104:role/aws-sam-cli-managed-dev-p-CloudFormationExecutionRo-ztPHxE7C17N7
-  PROD_ARTIFACTS_BUCKET: aws-sam-cli-managed-dev-pipeline-r-artifactsbucket-ysifdn41mxzw
-  # If there are functions with "Image" PackageType in your template,
-  # uncomment the line below and add "--image-repository ${PROD_IMAGE_REPOSITORY}" to
-  # prod "sam package" and "sam deploy" commands.
-  # PROD_IMAGE_REPOSITORY = '0123456789.dkr.ecr.region.amazonaws.com/repository-name'
-  PROD_REGION: us-east-1
+  DEV_CLOUDFORMATION_EXECUTION_ROLE: arn:aws:iam::975050381104:role/aws-sam-cli-managed-dev-p-CloudFormationExecutionRo-ztPHxE7C17N7
 
 jobs:
   test:
@@ -41,22 +33,9 @@ jobs:
       - name: Build resources
         run: sam build --template ${SAM_TEMPLATE} --use-container
 
-      # - name: Assume the prod pipeline user role
-      #   uses: aws-actions/configure-aws-credentials@v1-node16
-      #   with:
-      #     aws-access-key-id: ${{ env.PIPELINE_USER_ACCESS_KEY_ID }}
-      #     aws-secret-access-key: ${{ env.PIPELINE_USER_SECRET_ACCESS_KEY }}
-      #     aws-region: ${{ env.PROD_REGION }}
-      #     role-to-assume: ${{ env.PROD_PIPELINE_EXECUTION_ROLE }}
-      #     role-session-name: prod-packaging
-      #     role-duration-seconds: 3600
-      #     role-skip-session-tagging: true
-
       - name: Upload artifacts to production artifact buckets
         run: |
           sam package \
-            --s3-bucket ${PROD_ARTIFACTS_BUCKET} \
-            --region ${PROD_REGION} \
             --output-template-file packaged-prod.yaml
 
       - uses: actions/upload-artifact@v3
@@ -80,24 +59,11 @@ jobs:
         with:
           name: packaged-prod.yaml
 
-      # - name: Assume the prod pipeline user role
-      #   uses: aws-actions/configure-aws-credentials@v1-node16
-      #   with:
-      #     aws-access-key-id: ${{ env.PIPELINE_USER_ACCESS_KEY_ID }}
-      #     aws-secret-access-key: ${{ env.PIPELINE_USER_SECRET_ACCESS_KEY }}
-      #     aws-region: ${{ env.PROD_REGION }}
-      #     role-to-assume: ${{ env.PROD_PIPELINE_EXECUTION_ROLE }}
-      #     role-session-name: prod-deployment
-      #     role-duration-seconds: 3600
-      #     role-skip-session-tagging: true
-
       - name: Deploy to production account
         run: |
-          sam deploy --stack-name ${PROD_STACK_NAME} \
+          sam deploy \
             --template packaged-prod.yaml \
             --capabilities CAPABILITY_IAM \
-            --region ${PROD_REGION} \
-            --s3-bucket ${PROD_ARTIFACTS_BUCKET} \
             --no-fail-on-empty-changeset \
             --no-confirm-changeset \
-            --role-arn ${PROD_CLOUDFORMATION_EXECUTION_ROLE}
+            --role-arn ${DEV_CLOUDFORMATION_EXECUTION_ROLE}
