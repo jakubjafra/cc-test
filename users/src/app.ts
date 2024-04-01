@@ -1,5 +1,4 @@
-import { APIGatewayProxyEventV2, APIGatewayProxyResult } from 'aws-lambda';
-import assert from 'node:assert';
+import { APIGatewayProxyEventV2 } from 'aws-lambda';
 import {
   AttributeValue,
   DynamoDBClient,
@@ -12,39 +11,17 @@ import {
 import { object, string, InferType } from 'yup';
 import { v4 as uuidv4 } from 'uuid';
 
+import { assertExists, UserReportedError, parseJsonBody, JsonResponse, jsonResponse, getPathParam } from './utils';
+
 interface User {
   id: string;
   name: string;
   email: string;
 }
 
-function assertExists<T>(value?: T | null, message?: string): T {
-  assert(value, message);
-  return value;
-}
-
 const usersTableName = assertExists(process.env.USERS_TABLE_NAME, 'DynamoDB Users table name is required.');
 
 const client = new DynamoDBClient({});
-
-class UserReportedError extends Error {
-  statusCode: number;
-
-  constructor(statusCode: number, message = 'Internal server error.') {
-    super(message);
-    this.statusCode = statusCode;
-  }
-}
-
-function parseJsonBody(body: APIGatewayProxyEventV2['body']): unknown {
-  try {
-    if (body) {
-      return JSON.parse(body);
-    }
-  } catch (err) {}
-
-  throw new UserReportedError(400, 'Body parsing error.');
-}
 
 const userInputSchema = object({
   name: string().required(),
@@ -52,9 +29,9 @@ const userInputSchema = object({
 });
 type UserInput = InferType<typeof userInputSchema>;
 
-async function validateUserInput(body: APIGatewayProxyEventV2['body']): Promise<UserInput> {
+async function validateUserInput(body: unknown): Promise<UserInput> {
   try {
-    return await userInputSchema.validate(parseJsonBody(body));
+    return await userInputSchema.validate(body);
   } catch (error) {
     throw new UserReportedError(400, 'Input validation error.');
   }
@@ -131,46 +108,28 @@ async function deleteUser(userId: string): Promise<void> {
   );
 }
 
-function response(statusCode: number, value: unknown = {}): APIGatewayProxyResult {
-  return {
-    statusCode,
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(value),
-  };
-}
-
-function getPathParam(event: APIGatewayProxyEventV2, paramName: string): string {
-  const paramValue = event?.pathParameters?.[paramName];
-  if (!paramValue) {
-    throw new UserReportedError(400, `Param ${paramName} not found.`);
-  }
-  return paramValue;
-}
-
-export const lambdaHandler = async (event: APIGatewayProxyEventV2): Promise<APIGatewayProxyResult> => {
+export const lambdaHandler = async (event: APIGatewayProxyEventV2): Promise<JsonResponse> => {
   try {
     switch (event.routeKey) {
       case 'POST /users': {
-        const userInput = await validateUserInput(event.body);
+        const userInput = await validateUserInput(parseJsonBody(event.body));
 
         const user = await createUser(userInput);
 
-        return response(201, user);
+        return jsonResponse(201, user);
       }
 
       case 'GET /users': {
         const users = await listUsers();
 
-        return response(200, {
+        return jsonResponse(200, {
           results: users,
         });
       }
 
       case 'PATCH /users/{id}': {
         const userId = getPathParam(event, 'id');
-        const userInput = await validateUserInput(event.body);
+        const userInput = await validateUserInput(parseJsonBody(event.body));
 
         try {
           await patchUser(userId, userInput);
@@ -181,7 +140,7 @@ export const lambdaHandler = async (event: APIGatewayProxyEventV2): Promise<APIG
           throw err;
         }
 
-        return response(200);
+        return jsonResponse(200);
       }
 
       case 'DELETE /users/{id}': {
@@ -196,23 +155,23 @@ export const lambdaHandler = async (event: APIGatewayProxyEventV2): Promise<APIG
           throw err;
         }
 
-        return response(200);
+        return jsonResponse(200);
       }
 
       default:
-        return response(404);
+        return jsonResponse(404);
     }
   } catch (err) {
     // TODO: Report the errors to monitoring service.
     console.error(err);
 
     if (err instanceof UserReportedError) {
-      return response(err.statusCode, {
+      return jsonResponse(err.statusCode, {
         message: err.message,
       });
     }
 
-    return response(500, {
+    return jsonResponse(500, {
       message: 'Internal server error.',
     });
   }

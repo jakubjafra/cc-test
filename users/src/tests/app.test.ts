@@ -10,6 +10,7 @@ jest.mock('uuid', () => ({
 process.env.USERS_TABLE_NAME = 'USERS_TABLE_NAME';
 
 import { lambdaHandler } from '../app';
+import { jsonResponse } from '../utils';
 
 function apiGatewayProxyEvent(method: string, uri: string, body: unknown = {}): APIGatewayProxyEventV2 {
   return {
@@ -50,17 +51,13 @@ describe('app', () => {
       });
       const response = await lambdaHandler(request);
 
-      expect(response).toStrictEqual({
-        statusCode: 201,
-        body: JSON.stringify({
+      expect(response).toStrictEqual(
+        jsonResponse(201, {
           id: 'test-uuid',
           name: 'Test',
           email: 'test@test.com',
         }),
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
+      );
     });
   });
 });
