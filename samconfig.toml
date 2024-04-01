@@ -16,14 +16,11 @@ lint = true
 [default.deploy.parameters]
 capabilities = "CAPABILITY_IAM"
 confirm_changeset = true
-resolve_s3 = true
+s3_bucket = "aws-sam-cli-managed-default-samclisourcebucket-fwfjigbm1rpm"
 stack_name = "jakub-cc-test"
 s3_prefix = "jakub-cc-test"
 region = "us-east-1"
 image_repositories = []
-
-[default.package.parameters]
-resolve_s3 = true
 
 [default.sync.parameters]
 watch = true
