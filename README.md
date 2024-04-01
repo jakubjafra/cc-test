@@ -63,4 +63,5 @@ Example commands
 ----------------
 
 Installing dependencies locally: `cd users && npm install`
+
 Running unit tests: `cd users && npm run test`
