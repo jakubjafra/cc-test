@@ -144,7 +144,7 @@ function response(statusCode: number, value: unknown = {}): APIGatewayProxyResul
 function getPathParam(event: APIGatewayProxyEventV2, paramName: string): string {
   const paramValue = event?.pathParameters?.[paramName];
   if (!paramValue) {
-    throw new UserReportedError(400, `Param {paramName} not found.`);
+    throw new UserReportedError(400, `Param ${paramName} not found.`);
   }
   return paramValue;
 }

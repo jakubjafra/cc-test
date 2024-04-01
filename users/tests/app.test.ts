@@ -21,6 +21,7 @@ function apiGatewayProxyEvent(method: string, uri: string, body: unknown = {}): 
 const dynamoDBMock = mockClient(DynamoDBClient);
 dynamoDBMock.onAnyCommand().rejects(new Error('Unimplemented.'));
 
+// TODO: Add more unit test coverage.
 describe('app', () => {
   beforeEach(() => {
     dynamoDBMock.reset();
