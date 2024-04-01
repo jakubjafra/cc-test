@@ -4,22 +4,24 @@ cc-test
 A simple REST API built with AWS SAM, consisting of a single AWS Lambda behind an API Gateway which stores the records in DynamoDB table. New changes are deployed automatically to the `dev` env on push to the `main` branch, via a simple GitHub workflow.
 
 Architecture diagram:
+
 ![architecture diagram](./diagram.png)
 
 Capabilities
 ------------
 
-[x] Simple CRUD REST API
-[x] A deployment pipeline
-[x] IAM roles used
-[x] Lambda have a minimum required set of permissions (I've used a single lambda, a split could help here)
-[x] Visual diagram created
-[x] Resource names defined in env variables (example: `USERS_TABLE_NAME`)
-[x] Input validation (using `yup`)
-[x] Typescript used
+* Simple CRUD REST API
+* A deployment pipeline
+* IAM roles used
+* Lambda have a minimum required set of permissions (I've used a single lambda, a split could help here)
+* Visual diagram created
+* Resource names defined in env variables (example: `USERS_TABLE_NAME`)
+* Input validation (using `yup`)
+* Typescript used
 
 Extras:
-[x] Unit test coverage
+
+* Unit test coverage
 
 
 API doc (examples)
