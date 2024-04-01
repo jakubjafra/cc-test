@@ -135,7 +135,7 @@ export const lambdaHandler = async (event: APIGatewayProxyEventV2): Promise<Json
           await patchUser(userId, userInput);
         } catch (err) {
           if (err instanceof ResourceNotFoundException) {
-            throw new UserReportedError(404);
+            throw new UserReportedError(404, 'User not found.');
           }
           throw err;
         }
@@ -150,7 +150,7 @@ export const lambdaHandler = async (event: APIGatewayProxyEventV2): Promise<Json
           await deleteUser(userId);
         } catch (err) {
           if (err instanceof ResourceNotFoundException) {
-            throw new UserReportedError(404);
+            throw new UserReportedError(404, 'User not found.');
           }
           throw err;
         }
@@ -159,11 +159,10 @@ export const lambdaHandler = async (event: APIGatewayProxyEventV2): Promise<Json
       }
 
       default:
-        return jsonResponse(404);
+        return jsonResponse(401);
     }
   } catch (err) {
     // TODO: Report the errors to monitoring service.
-    console.error(err);
 
     if (err instanceof UserReportedError) {
       return jsonResponse(err.statusCode, {

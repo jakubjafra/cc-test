@@ -4,7 +4,7 @@ import assert from 'node:assert';
 export class UserReportedError extends Error {
   statusCode: number;
 
-  constructor(statusCode: number, message = 'Internal server error.') {
+  constructor(statusCode: number, message: string) {
     super(message);
     this.statusCode = statusCode;
   }
