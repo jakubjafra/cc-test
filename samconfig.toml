@@ -6,6 +6,7 @@ version = 0.1
 [default.global.parameters]
 stack_name = "sam-app"
 s3_bucket = "aws-sam-cli-managed-dev-pipeline-r-artifactsbucket-ysifdn41mxzw"
+region = "us-east-1"
 
 [default.build.parameters]
 cached = true
@@ -17,7 +18,6 @@ lint = true
 [default.deploy.parameters]
 capabilities = "CAPABILITY_IAM"
 confirm_changeset = true
-region = "us-east-1"
 image_repositories = []
 
 [default.sync.parameters]
